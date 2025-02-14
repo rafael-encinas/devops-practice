@@ -1,0 +1,39 @@
+- hosts: localhost
+  connection: local
+  vars:
+    java_packages:
+      - java-17-amazon-corretto
+    jenkins_packages:
+      - jenkins  
+  tasks:
+    - name: Download Jenkins repository file
+      get_url:
+        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        dest: /etc/yum.repos.d/jenkins.repo
+      become: true
+
+    - name: Import Jenkins-CI key
+      shell: rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+      become: true
+
+    - name: Install Java
+      yum:
+        name: "{{ java_packages }}"
+        state: present
+      become: true
+
+    - name: Install Jenkins
+      yum:
+        name: "{{ jenkins_packages }}"
+        state: present
+      become: true
+    
+    - name: Enable the Jenkins service to start at boot
+      shell: systemctl enable jenkins
+      become: true
+
+    - name: Start Jenkins service
+      service:
+        name: jenkins
+        state: started
+      become: true
